@@ -4,7 +4,8 @@ Interactive N-body gravity simulator running in the browser. Uses a Barnes-Hut O
 
 **[Live demo →](https://rolodex.github.io/cosmos)**
 
-![cosmos screenshot](https://github.com/RoLoDeXx/cosmos/assets/placeholder/preview.png)
+<img width="1720" height="1044" alt="image" src="https://github.com/user-attachments/assets/77ee18de-831f-4f8f-a07a-60b0977ac5e6" />
+
 
 ## Features
 
