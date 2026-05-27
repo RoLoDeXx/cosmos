@@ -6,7 +6,8 @@ Inspired by [Universe Sandbox](https://universesandbox.com/), cosmos started as 
 
 **[Live demo →](https://rolodexx.github.io/cosmos)**
 
-<img width="1720" height="1044" alt="Cosmos simulator screenshot" src="https://github.com/user-attachments/assets/77ce18de-831f-4f8f-a07a-60b0977ac5e6" />
+<img width="1701" height="1315" alt="image" src="https://github.com/user-attachments/assets/9de615b5-ca7e-4179-b999-d5f2c4ce7084" />
+
 
 ---
 
