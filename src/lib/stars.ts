@@ -1,4 +1,4 @@
-import type { Star, Camera } from './types'
+import type { Lens, Star, Camera } from './types'
 
 const TINTS = ['255,255,255', '255,255,255', '255,255,255', '255,255,255', '200,220,255', '255,225,190']
 
@@ -32,12 +32,32 @@ export function drawStarfield(
   W: number,
   H: number,
   now: number,
+  lenses: Lens[] = [],
 ) {
   for (const s of stars) {
     let ex = ((s.x - cam.x * s.p) % W + W) % W
     let ey = ((s.y - cam.y * s.p) % H + H) % H
     let alpha = s.a
     if (s.tw) alpha *= 0.6 + 0.4 * Math.sin(now * s.tw + s.ph)
+
+    // Gravitational lensing: deflect apparent position outward from each lens
+    for (const lens of lenses) {
+      const dx = ex - lens.sx, dy = ey - lens.sy
+      const r2 = dx * dx + dy * dy
+      if (r2 < lens.outerCutoff2 && r2 > 1) {
+        const r = Math.sqrt(r2)
+        // Classic lensing: image pushed outward by Re²/r, capped to avoid divergence
+        const defl = Math.min(lens.Re2 / r, lens.Re * 2.5)
+        ex += (dx / r) * defl
+        ey += (dy / r) * defl
+        // Stars inside the Einstein radius are occluded — fade them out
+        if (r2 < lens.Re2) {
+          alpha *= Math.sqrt(r2 / lens.Re2) * 0.45
+        }
+      }
+    }
+
+    if (alpha <= 0) continue
     ctx.fillStyle = `rgba(${s.col},${alpha.toFixed(3)})`
     ctx.beginPath()
     ctx.arc(ex, ey, s.r, 0, Math.PI * 2)

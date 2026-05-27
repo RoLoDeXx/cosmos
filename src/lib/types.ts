@@ -48,3 +48,11 @@ export interface PresetConfig {
   zoom: number
   trailMax: number
 }
+
+export interface Lens {
+  sx: number; sy: number   // screen-space centre (logical px)
+  Re: number               // Einstein radius (logical px)
+  Re2: number              // Re²
+  outerCutoff2: number     // (3 Re)² — stars beyond this are unaffected
+  mass: number
+}

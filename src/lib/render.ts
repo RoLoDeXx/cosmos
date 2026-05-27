@@ -1,5 +1,53 @@
-import type { Body, Camera, Star } from './types'
+import type { Body, Camera, Lens, Star } from './types'
 import { drawStarfield } from './stars'
+
+const LENS_MIN_MASS = 100  // minimum mass to produce a visible lens
+
+function collectLenses(bodies: Body[], cam: Camera): Lens[] {
+  const lenses: Lens[] = []
+  for (const b of bodies) {
+    if (b.mass < LENS_MIN_MASS) continue
+    const sx = (b.x - cam.x) * cam.zoom
+    const sy = (b.y - cam.y) * cam.zoom
+    // Einstein radius scales as mass^0.4 so heavy objects dominate dramatically
+    const Re = Math.pow(b.mass, 0.4) * 4.5 * cam.zoom
+    const Re2 = Re * Re
+    lenses.push({ sx, sy, Re, Re2, outerCutoff2: Re2 * 9, mass: b.mass })
+  }
+  return lenses
+}
+
+function drawLensRings(ctx: CanvasRenderingContext2D, lenses: Lens[]) {
+  for (const { sx, sy, Re, mass } of lenses) {
+    const t = Math.min(1, mass / 1500)  // 0–1 intensity scale
+
+    // Gravitational shadow — darkens the region inside the Einstein radius
+    const shadow = ctx.createRadialGradient(sx, sy, 0, sx, sy, Re * 0.95)
+    shadow.addColorStop(0,   `rgba(0,0,8,${(t * 0.80).toFixed(3)})`)
+    shadow.addColorStop(0.6, `rgba(0,0,8,${(t * 0.45).toFixed(3)})`)
+    shadow.addColorStop(1,   'rgba(0,0,8,0)')
+    ctx.fillStyle = shadow
+    ctx.beginPath(); ctx.arc(sx, sy, Re * 0.95, 0, Math.PI * 2); ctx.fill()
+
+    // Einstein ring — golden glow at the lensing radius
+    const ring = ctx.createRadialGradient(sx, sy, Re * 0.72, sx, sy, Re * 1.28)
+    ring.addColorStop(0,    'rgba(255,195,70,0)')
+    ring.addColorStop(0.35, `rgba(255,215,100,${(t * 0.60).toFixed(3)})`)
+    ring.addColorStop(0.55, `rgba(255,240,170,${(t * 0.40).toFixed(3)})`)
+    ring.addColorStop(1,    'rgba(255,195,70,0)')
+    ctx.fillStyle = ring
+    ctx.beginPath(); ctx.arc(sx, sy, Re * 1.28, 0, Math.PI * 2); ctx.fill()
+
+    // Outer spacetime-distortion halo — only for heavy objects (stars+)
+    if (mass >= 250) {
+      const halo = ctx.createRadialGradient(sx, sy, Re * 1.2, sx, sy, Re * 2.8)
+      halo.addColorStop(0, `rgba(160,120,255,${(t * 0.13).toFixed(3)})`)
+      halo.addColorStop(1, 'rgba(160,120,255,0)')
+      ctx.fillStyle = halo
+      ctx.beginPath(); ctx.arc(sx, sy, Re * 2.8, 0, Math.PI * 2); ctx.fill()
+    }
+  }
+}
 
 export function drawTrail(ctx: CanvasRenderingContext2D, b: Body, cam: Camera) {
   const t = b.trail
@@ -127,7 +175,9 @@ export function renderFrame(
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.fillStyle = '#07070d'
   ctx.fillRect(0, 0, W, H)
-  if (starfieldOn) drawStarfield(ctx, stars, cam, W, H, now)
+  const lenses = collectLenses(bodies, cam)
+  if (starfieldOn) drawStarfield(ctx, stars, cam, W, H, now, lenses)
+  if (lenses.length > 0) drawLensRings(ctx, lenses)
   const k = cam.zoom * dpr
   ctx.setTransform(k, 0, 0, k, -cam.x * k, -cam.y * k)
   for (const b of bodies) drawTrail(ctx, b, cam)
