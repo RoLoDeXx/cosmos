@@ -163,8 +163,11 @@ export function useSimulation(): SimControls {
   }, [])
 
   const loadPreset = useCallback((name: string) => {
-    applyPreset(name, bodies.current, gravityRef.current, W.current, H.current, cam.current)
-  }, [gravityRef])
+    const cfg = applyPreset(name, bodies.current, W.current, H.current, cam.current)
+    setGravity(cfg.gravity)
+    setTimeScale(cfg.timeScale)
+    setTrailMax(cfg.trailMax)
+  }, [setGravity, setTimeScale, setTrailMax])
 
   const getShareCode = useCallback(() => {
     return encodeState(

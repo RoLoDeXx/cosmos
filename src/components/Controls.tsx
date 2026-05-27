@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { SimControls } from '../hooks/useSimulation'
 import type { BodyType } from '../lib/types'
 
@@ -23,21 +24,81 @@ function SliderRow({ label, id, min, max, step, value, display, onChange }: {
   )
 }
 
-const PRESETS = ['solar', 'binary', 'three-body', 'cluster', 'galaxy'] as const
-const PRESET_KEYS: Record<string, string> = { 'three-body': 'chaos' }
-const TYPES: BodyType[] = ['moon', 'planet', 'star', 'blackhole']
+const PRESET_GROUPS = [
+  { label: 'Classic Systems', items: [
+    ['solar',     'Solar System'],
+    ['binary',    'Binary Stars'],
+    ['chaos',     'Three-Body Chaos'],
+    ['cluster',   'Star Cluster'],
+    ['galaxy',    'Galaxy'],
+  ]},
+  { label: 'Famous Systems', items: [
+    ['trappist',  'TRAPPIST-1'],
+    ['asteroid',  'Asteroid Belt'],
+  ]},
+  { label: 'Special Orbits', items: [
+    ['figure8',   'Figure-8 Choreography'],
+  ]},
+  { label: 'Collisions & Events', items: [
+    ['collision', 'Galaxy Collision'],
+    ['rogue',     'Rogue Star Flyby'],
+  ]},
+  { label: 'Compact Objects', items: [
+    ['pulsar',    'Pulsar System'],
+  ]},
+] as const
+
+const BODY_GROUPS = [
+  { label: 'Small Bodies', items: [
+    ['moon',        'Moon'],
+    ['asteroid',    'Asteroid'],
+    ['comet',       'Comet'],
+  ]},
+  { label: 'Planets', items: [
+    ['rocky',       'Rocky Planet'],
+    ['planet',      'Terrestrial Planet'],
+    ['ocean',       'Ocean World'],
+    ['lava',        'Lava World'],
+    ['ice-giant',   'Ice Giant'],
+    ['gas-giant',   'Gas Giant'],
+  ]},
+  { label: 'Stars', items: [
+    ['red-dwarf',   'Red Dwarf  (M-type)'],
+    ['star',        'Yellow Dwarf  (Sun-like)'],
+    ['red-giant',   'Red Giant'],
+    ['blue-giant',  'Blue Giant  (O/B-type)'],
+    ['white-dwarf', 'White Dwarf'],
+  ]},
+  { label: 'Compact Objects', items: [
+    ['neutron',     'Neutron Star'],
+    ['blackhole',   'Black Hole'],
+  ]},
+] as const
 
 export function Controls(props: Props) {
   const { paused, starfieldOn, vectorsOn, barnesHutOn, currentType } = props
   const { timeScale, gravity, trailMax, nextMass } = props
 
+  const [selectedPreset, setSelectedPreset] = useState('solar')
+
   function trailDisplay(v: number) {
     return String(Math.round(50 + (v / 100) * 1450))
   }
 
+  function handlePresetChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const val = e.target.value
+    setSelectedPreset(val)
+    props.loadPreset(val)
+  }
+
+  function handleBodyTypeChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    props.setCurrentType(e.target.value as BodyType)
+  }
+
   return (
     <div className="gv-controls">
-      {/* Action buttons */}
+
+      {/* ── Playback ── */}
       <div className="gv-row">
         <div className="gv-actions">
           <button onClick={props.togglePause} title="pause/play">
@@ -78,25 +139,46 @@ export function Controls(props: Props) {
         </div>
       </div>
 
-      {/* Presets */}
+      <hr className="gv-sep" />
+
+      {/* ── Preset Scenarios ── */}
+      <div className="gv-sec-head">scenario</div>
       <div className="gv-row">
-        <div className="gv-presets">
-          {PRESETS.map(p => (
-            <button key={p} onClick={() => props.loadPreset(PRESET_KEYS[p] ?? p)}>{p}</button>
+        <select className="gv-select" value={selectedPreset} onChange={handlePresetChange}>
+          {PRESET_GROUPS.map(group => (
+            <optgroup key={group.label} label={group.label}>
+              {group.items.map(([id, name]) => (
+                <option key={id} value={id}>{name}</option>
+              ))}
+            </optgroup>
           ))}
-        </div>
+        </select>
       </div>
 
-      {/* Spawn type */}
+      <hr className="gv-sep" />
+
+      {/* ── Spawn Body ── */}
+      <div className="gv-sec-head">spawn</div>
       <div className="gv-row">
-        <label>spawn</label>
-        <div className="gv-types">
-          {TYPES.map(t => (
-            <button key={t} className={currentType === t ? '' : 'gv-dim'}
-              onClick={() => props.setCurrentType(t)}>{t.replace('blackhole', 'black hole')}</button>
+        <select className="gv-select" value={currentType} onChange={handleBodyTypeChange}>
+          {BODY_GROUPS.map(group => (
+            <optgroup key={group.label} label={group.label}>
+              {group.items.map(([id, name]) => (
+                <option key={id} value={id}>{name}</option>
+              ))}
+            </optgroup>
           ))}
-        </div>
+        </select>
       </div>
+
+      <SliderRow label="mass" id="gv-mass" min={2} max={2000} step={1}
+        value={nextMass} display={String(nextMass)}
+        onChange={props.setNextMass} />
+
+      <hr className="gv-sep" />
+
+      {/* ── Physics ── */}
+      <div className="gv-sec-head">physics</div>
 
       <SliderRow label="gravity" id="gv-g" min={10} max={400} step={5}
         value={Math.round(gravity * 100)} display={gravity.toFixed(2)}
@@ -110,9 +192,6 @@ export function Controls(props: Props) {
         value={Math.round((trailMax - 50) / 14.5)} display={trailDisplay(Math.round((trailMax - 50) / 14.5))}
         onChange={v => props.setTrailMax(Math.round(50 + (v / 100) * 1450))} />
 
-      <SliderRow label="mass" id="gv-mass" min={2} max={2000} step={1}
-        value={nextMass} display={String(nextMass)}
-        onChange={props.setNextMass} />
     </div>
   )
 }

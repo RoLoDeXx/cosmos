@@ -24,6 +24,8 @@ export function drawTrail(ctx: CanvasRenderingContext2D, b: Body, cam: Camera) {
   }
 }
 
+const STAR_LIKE = new Set(['star', 'red-dwarf', 'blue-giant', 'red-giant', 'white-dwarf', 'neutron'])
+
 export function drawBody(ctx: CanvasRenderingContext2D, b: Body) {
   if (b.type === 'blackhole') {
     const r2 = b.r * 2.7
@@ -38,11 +40,12 @@ export function drawBody(ctx: CanvasRenderingContext2D, b: Body) {
     ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 0.88, 0, Math.PI * 2); ctx.fill()
     return
   }
-  const glowMult = b.type === 'star' ? 2.9 : 2.2
+  const isStarLike = STAR_LIKE.has(b.type)
+  const glowMult = isStarLike ? 2.9 : 2.2
   const r2 = b.r * glowMult
   const gr = ctx.createRadialGradient(b.x, b.y, b.r * 0.4, b.x, b.y, r2)
   gr.addColorStop(0, b.color)
-  gr.addColorStop(0.5, b.color + (b.type === 'star' ? '78' : '60'))
+  gr.addColorStop(0.5, b.color + (isStarLike ? '78' : '60'))
   gr.addColorStop(1, b.color + '00')
   ctx.fillStyle = gr
   ctx.beginPath(); ctx.arc(b.x, b.y, r2, 0, Math.PI * 2); ctx.fill()

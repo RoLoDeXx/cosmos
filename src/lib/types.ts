@@ -1,4 +1,12 @@
-export type BodyType = 'moon' | 'planet' | 'star' | 'blackhole'
+export type BodyType =
+  // Small bodies
+  | 'moon' | 'asteroid' | 'comet'
+  // Planets
+  | 'rocky' | 'planet' | 'ocean' | 'lava' | 'ice-giant' | 'gas-giant'
+  // Stars
+  | 'red-dwarf' | 'star' | 'red-giant' | 'blue-giant' | 'white-dwarf'
+  // Compact objects
+  | 'neutron' | 'blackhole'
 
 export interface RGB { r: number; g: number; b: number }
 
@@ -32,4 +40,11 @@ export interface SerializedState {
   ve: 0 | 1
   bh: 0 | 1
   b: [number, number, number, number, number, string, BodyType][]
+}
+
+export interface PresetConfig {
+  gravity: number
+  timeScale: number
+  zoom: number
+  trailMax: number
 }

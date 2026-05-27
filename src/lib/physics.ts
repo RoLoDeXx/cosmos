@@ -1,7 +1,32 @@
-import type { Body, Camera, RGB } from './types'
+import type { Body, BodyType, Camera, RGB } from './types'
 
 const SOFT = 5
 const THETA = 0.6
+
+// Mass thresholds for body-type promotion on merge (descending order)
+const PROMOTE: [number, BodyType, string][] = [
+  [1700, 'blackhole', '#1a0a14'],
+  [1100, 'neutron',   '#CCEEFF'],
+  [650,  'blue-giant','#90D0FF'],
+  [460,  'red-giant', '#FF8030'],
+  [320,  'star',      '#FFD27A'],
+  [200,  'red-dwarf', '#FF5030'],
+]
+// Tier rank — only ever promote upward, never downward
+const TYPE_TIER: Partial<Record<BodyType, number>> = {
+  'red-dwarf': 1, 'star': 2, 'red-giant': 3, 'blue-giant': 4, 'white-dwarf': 3,
+  'neutron': 5, 'blackhole': 6,
+}
+function resolvePromotion(mass: number, currentType: BodyType, currentColor: string): [BodyType, string] {
+  const currentTier = TYPE_TIER[currentType] ?? 0
+  for (const [threshold, type, color] of PROMOTE) {
+    if (mass >= threshold) {
+      if ((TYPE_TIER[type] ?? 0) > currentTier) return [type, color]
+      break
+    }
+  }
+  return [currentType, currentColor]
+}
 
 export function hexToRgb(hex: string): RGB {
   const m = hex.replace('#', '')
@@ -153,7 +178,11 @@ export function physicsStep(
         b.vy = (a.vy * a.mass + b.vy * b.mass) / m
         b.x = (a.x * a.mass + b.x * b.mass) / m
         b.y = (a.y * a.mass + b.y * b.mass) / m
-        if (a.mass > b.mass) { b.color = a.color; b.rgb = { ...a.rgb }; b.type = a.type }
+        // Winner provides base type/color, then promote if mass crosses a threshold
+        const winnerType  = a.mass >= b.mass ? a.type  : b.type
+        const winnerColor = a.mass >= b.mass ? a.color : b.color
+        const [newType, newColor] = resolvePromotion(m, winnerType, winnerColor)
+        b.type = newType; b.color = newColor; b.rgb = hexToRgb(newColor)
         b.mass = m
         b.r = Math.cbrt(m) * 1.7 + 1.3
         if (a.trail.length > b.trail.length) b.trail = a.trail

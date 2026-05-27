@@ -90,6 +90,41 @@ body {
 
 .gv-actions, .gv-presets, .gv-types { display: flex; gap: 6px; flex-wrap: wrap; }
 
+/* Section headers */
+.gv-sec-head {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-3);
+  padding: 0 0 2px;
+}
+
+/* Horizontal rule separator between sections */
+.gv-sep {
+  border: none; border-top: 0.5px solid var(--border); margin: 2px 0;
+}
+
+/* Styled select dropdowns */
+.gv-select {
+  flex: 1; width: 100%;
+  font-family: var(--font); font-size: 12px;
+  background: var(--panel-2);
+  border: 0.5px solid var(--border-2);
+  color: var(--text);
+  padding: 8px 28px 8px 11px;
+  border-radius: 7px;
+  cursor: pointer;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238d8e98' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  outline: none;
+  transition: border-color 0.15s, background-color 0.15s;
+  min-width: 0;
+}
+.gv-select:hover { border-color: rgba(255,255,255,0.3); background-color: rgba(255,255,255,0.03); }
+.gv-select:focus { border-color: rgba(255,255,255,0.4); }
+.gv-select option { background: #14141d; color: var(--text); }
+.gv-select optgroup { background: #14141d; color: var(--text-3); font-size: 11px; }
+
 button {
   font-family: var(--font); font-size: 12px; padding: 7px 12px;
   background: transparent; border: 0.5px solid var(--border-2);
