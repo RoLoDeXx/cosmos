@@ -139,6 +139,25 @@ button svg { width: 13px; height: 13px; stroke: currentColor; }
 
 .gv-off, .gv-dim { opacity: 0.42; }
 
+.gv-scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+.gv-scenario-grid button {
+  font-size: 11px;
+  padding: 6px 8px;
+  justify-content: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gv-scene-active {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  background: rgba(255, 210, 122, 0.08) !important;
+}
+
 .gv-toast {
   position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
   background: rgba(20, 20, 28, 0.96); border: 0.5px solid var(--border-2);

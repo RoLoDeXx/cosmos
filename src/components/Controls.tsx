@@ -118,26 +118,56 @@ function SliderRow({ label, id, min, max, step, value, display, onChange }: {
 
 const PRESET_GROUPS = [
   { label: 'Classic Systems', items: [
-    ['solar',     'Solar System'],
-    ['binary',    'Binary Stars'],
-    ['chaos',     'Three-Body Chaos'],
-    ['cluster',   'Star Cluster'],
-    ['galaxy',    'Galaxy'],
+    ['solar',         'Solar System'],
+    ['binary',        'Binary Stars'],
+    ['chaos',         'Three-Body Chaos'],
+    ['cluster',       'Star Cluster'],
+    ['galaxy',        'Galaxy'],
   ]},
   { label: 'Famous Systems', items: [
-    ['trappist',  'TRAPPIST-1'],
-    ['asteroid',  'Asteroid Belt'],
+    ['trappist',      'TRAPPIST-1'],
+    ['asteroid',      'Asteroid Belt'],
   ]},
   { label: 'Special Orbits', items: [
-    ['figure8',   'Figure-8 Choreography'],
+    ['figure8',       'Figure-8 Choreography'],
   ]},
   { label: 'Collisions & Events', items: [
-    ['collision', 'Galaxy Collision'],
-    ['rogue',     'Rogue Star Flyby'],
+    ['collision',     'Galaxy Collision'],
+    ['rogue',         'Rogue Star Flyby'],
   ]},
   { label: 'Compact Objects', items: [
-    ['pulsar',    'Pulsar System'],
+    ['pulsar',        'Pulsar System'],
   ]},
+  { label: 'Real Events', items: [
+    ['sl9',           'Shoemaker-Levy 9 Impact'],
+    ['gw150914',      'GW150914 (First Gravitational Wave)'],
+    ['oumuamua',      'ʻOumuamua Flyby'],
+  ]},
+  { label: 'Real Systems', items: [
+    ['alphacentauri', 'Alpha Centauri Triple'],
+    ['kepler16',      'Kepler-16 (Tatooine)'],
+    ['toi178',        'TOI-178 Resonance Chain'],
+  ]},
+] as const
+
+const ALL_SCENARIO_BTNS = [
+  { id: 'solar',         label: 'Solar System'    },
+  { id: 'binary',        label: 'Binary Stars'    },
+  { id: 'chaos',         label: '3-Body Chaos'    },
+  { id: 'cluster',       label: 'Star Cluster'    },
+  { id: 'galaxy',        label: 'Galaxy'          },
+  { id: 'trappist',      label: 'TRAPPIST-1'      },
+  { id: 'asteroid',      label: 'Asteroid Belt'   },
+  { id: 'figure8',       label: 'Figure-8'        },
+  { id: 'collision',     label: 'Gal. Collision'  },
+  { id: 'rogue',         label: 'Rogue Star'      },
+  { id: 'pulsar',        label: 'Pulsar'          },
+  { id: 'sl9',           label: 'SL9 Impact'      },
+  { id: 'gw150914',      label: 'GW150914'        },
+  { id: 'oumuamua',      label: 'ʻOumuamua'       },
+  { id: 'alphacentauri', label: 'α Centauri'      },
+  { id: 'kepler16',      label: 'Kepler-16'       },
+  { id: 'toi178',        label: 'TOI-178'         },
 ] as const
 
 const BODY_GROUPS = [
@@ -249,6 +279,15 @@ export function Controls(props: Props) {
 
       {/* ── Preset Scenarios ── */}
       <div className="gv-sec-head">scenario</div>
+      <div className="gv-scenario-grid">
+        {ALL_SCENARIO_BTNS.map(({ id, label }) => (
+          <button
+            key={id}
+            className={selectedPreset === id ? 'gv-scene-active' : ''}
+            onClick={() => { setSelectedPreset(id); props.loadPreset(id) }}
+          >{label}</button>
+        ))}
+      </div>
       <div className="gv-row">
         <select className="gv-select" value={selectedPreset} onChange={handlePresetChange}>
           {PRESET_GROUPS.map(group => (

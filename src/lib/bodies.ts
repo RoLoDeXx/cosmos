@@ -40,17 +40,24 @@ export function makeBody(
 
 // Per-preset recommended settings
 const PRESET_CONFIGS: Record<string, PresetConfig> = {
-  solar:     { gravity: 1.0,  timeScale: 1.0,  zoom: 0.85, trailMax: 850  },
-  binary:    { gravity: 1.0,  timeScale: 1.0,  zoom: 0.9,  trailMax: 850  },
-  chaos:     { gravity: 1.0,  timeScale: 0.7,  zoom: 1.0,  trailMax: 1200 },
-  cluster:   { gravity: 0.8,  timeScale: 0.6,  zoom: 1.2,  trailMax: 600  },
-  galaxy:    { gravity: 1.0,  timeScale: 1.5,  zoom: 0.55, trailMax: 1200 },
-  trappist:  { gravity: 1.0,  timeScale: 0.45, zoom: 1.6,  trailMax: 800  },
-  figure8:   { gravity: 1.0,  timeScale: 0.8,  zoom: 1.2,  trailMax: 1400 },
-  collision: { gravity: 0.8,  timeScale: 0.5,  zoom: 0.45, trailMax: 1200 },
-  asteroid:  { gravity: 1.0,  timeScale: 1.2,  zoom: 0.58, trailMax: 700  },
-  pulsar:    { gravity: 1.5,  timeScale: 0.35, zoom: 0.75, trailMax: 1000 },
-  rogue:     { gravity: 1.0,  timeScale: 0.75, zoom: 0.8,  trailMax: 1100 },
+  solar:         { gravity: 1.0,  timeScale: 1.0,  zoom: 0.85, trailMax: 850  },
+  binary:        { gravity: 1.0,  timeScale: 1.0,  zoom: 0.9,  trailMax: 850  },
+  chaos:         { gravity: 1.0,  timeScale: 0.7,  zoom: 1.0,  trailMax: 1200 },
+  cluster:       { gravity: 0.8,  timeScale: 0.6,  zoom: 1.2,  trailMax: 600  },
+  galaxy:        { gravity: 1.0,  timeScale: 1.5,  zoom: 0.55, trailMax: 1200 },
+  trappist:      { gravity: 1.0,  timeScale: 0.45, zoom: 1.6,  trailMax: 800  },
+  figure8:       { gravity: 1.0,  timeScale: 0.8,  zoom: 1.2,  trailMax: 1400 },
+  collision:     { gravity: 0.8,  timeScale: 0.5,  zoom: 0.45, trailMax: 1200 },
+  asteroid:      { gravity: 1.0,  timeScale: 1.2,  zoom: 0.58, trailMax: 700  },
+  pulsar:        { gravity: 1.5,  timeScale: 0.35, zoom: 0.75, trailMax: 1000 },
+  rogue:         { gravity: 1.0,  timeScale: 0.75, zoom: 0.8,  trailMax: 1100 },
+  // Real events & systems
+  sl9:           { gravity: 1.0,  timeScale: 0.5,  zoom: 1.4,  trailMax: 1000 },
+  gw150914:      { gravity: 1.5,  timeScale: 0.3,  zoom: 1.8,  trailMax: 1400 },
+  oumuamua:      { gravity: 1.0,  timeScale: 0.75, zoom: 0.85, trailMax: 900  },
+  alphacentauri: { gravity: 1.0,  timeScale: 0.55, zoom: 0.72, trailMax: 1000 },
+  kepler16:      { gravity: 1.0,  timeScale: 0.6,  zoom: 1.2,  trailMax: 1200 },
+  toi178:        { gravity: 1.0,  timeScale: 0.45, zoom: 1.1,  trailMax: 1100 },
 }
 
 export function applyPreset(name: string, bodies: Body[], W: number, H: number, cam: Camera): PresetConfig {
@@ -183,6 +190,96 @@ export function applyPreset(name: string, bodies: Body[], W: number, H: number, 
     }
     const d = Math.min(W, H) * 0.42
     bodies.push(makeBody(cx + d, cy - d, -2.1, 2.1, 260, '#FF5C7A', 'red-giant'))
+
+  } else if (name === 'sl9') {
+    // Shoemaker-Levy 9 (1994): train of comet fragments converging on Jupiter
+    bodies.push(makeBody(cx, cy, 0, 0, 750, '#E8C080', 'gas-giant'))
+    const moonData: [number, number][] = [[38, 2.5], [58, 2], [85, 3.5], [125, 4]]
+    for (const [r, m] of moonData) {
+      const ang = Math.random() * Math.PI * 2, v = Math.sqrt(G * 750 / r)
+      bodies.push(makeBody(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r, -Math.sin(ang) * v, Math.cos(ang) * v, m, null, 'moon'))
+    }
+    for (let i = 0; i < 9; i++) {
+      const t = i / 8
+      bodies.push(makeBody(
+        cx + 155 - t * 28, cy - 130 + t * 52,
+        -1.9 + (Math.random() - 0.5) * 0.22,
+        1.5 + (Math.random() - 0.5) * 0.18,
+        1.2 + Math.random() * 2, '#C8E8FF', 'comet',
+      ))
+    }
+
+  } else if (name === 'gw150914') {
+    // GW150914: first detected gravitational-wave event – two stellar black holes inspiraling
+    const M = 550, sep = 32
+    const v = Math.sqrt(G * M / (2 * sep)) * 0.86
+    bodies.push(makeBody(cx - sep, cy, 0, -v, M, '#1a0a14', 'blackhole'))
+    bodies.push(makeBody(cx + sep, cy, 0,  v, M, '#1a0a14', 'blackhole'))
+    for (let i = 0; i < 55; i++) {
+      const r = 75 + Math.random() * 100, ang = Math.random() * Math.PI * 2
+      const vd = Math.sqrt(G * (2 * M) / r) * (0.94 + Math.random() * 0.1)
+      bodies.push(makeBody(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r, -Math.sin(ang) * vd, Math.cos(ang) * vd, 0.4 + Math.random() * 0.7, null, 'asteroid'))
+    }
+
+  } else if (name === 'oumuamua') {
+    // ʻOumuamua (2017): interstellar object on hyperbolic flyby through a solar system
+    bodies.push(makeBody(cx, cy, 0, 0, 360, '#FFD27A', 'star'))
+    for (const r of [55, 95, 140]) {
+      const ang = Math.random() * Math.PI * 2, v = Math.sqrt(G * 360 / r)
+      bodies.push(makeBody(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r, -Math.sin(ang) * v, Math.cos(ang) * v, 4 + Math.random() * 7, null, 'planet'))
+    }
+    const d = Math.min(W, H) * 0.40
+    bodies.push(makeBody(cx - d, cy + d * 0.22, 3.4, -1.05, 2, '#C8C490', 'asteroid'))
+
+  } else if (name === 'alphacentauri') {
+    // Alpha Centauri: hierarchical triple – tight A/B binary + distant Proxima
+    const mA = 310, mB = 270, sep = 48
+    const rA = sep * mB / (mA + mB), rB = sep * mA / (mA + mB)
+    const omega = Math.sqrt(G * (mA + mB) / (sep * sep * sep))
+    bodies.push(makeBody(cx - rA, cy, 0, -omega * rA, mA, '#FFEE80', 'star'))      // Alpha Cen A
+    bodies.push(makeBody(cx + rB, cy, 0,  omega * rB, mB, '#FFD060', 'star'))      // Alpha Cen B
+    // Proxima Centauri in a wide halo orbit
+    const rP = 255, angP = -Math.PI / 3
+    const vP = Math.sqrt(G * (mA + mB) / rP)
+    const pxP = cx + Math.cos(angP) * rP, pyP = cy + Math.sin(angP) * rP
+    bodies.push(makeBody(pxP, pyP, -Math.sin(angP) * vP, Math.cos(angP) * vP, 100, '#FF4020', 'red-dwarf'))
+    // Proxima b: rocky planet in Proxima's habitable zone
+    const rPb = 22, angPb = Math.random() * Math.PI * 2, vPb = Math.sqrt(G * 100 / rPb)
+    bodies.push(makeBody(
+      pxP + Math.cos(angPb) * rPb, pyP + Math.sin(angPb) * rPb,
+      -Math.sin(angP) * vP - Math.sin(angPb) * vPb,
+       Math.cos(angP) * vP + Math.cos(angPb) * vPb,
+      3, '#70B0FF', 'rocky',
+    ))
+
+  } else if (name === 'kepler16') {
+    // Kepler-16: first confirmed circumbinary planet – the real "Tatooine"
+    const mA = 230, mB = 150, sep = 40
+    const rA = sep * mB / (mA + mB), rB = sep * mA / (mA + mB)
+    const omega = Math.sqrt(G * (mA + mB) / (sep * sep * sep))
+    bodies.push(makeBody(cx - rA, cy, 0, -omega * rA, mA, '#FFCC60', 'star'))       // Kepler-16A
+    bodies.push(makeBody(cx + rB, cy, 0,  omega * rB, mB, '#FF9040', 'red-dwarf'))  // Kepler-16B
+    // Kepler-16b: gas giant in wide circumbinary orbit
+    const rPl = 140, angPl = Math.random() * Math.PI * 2, vPl = Math.sqrt(G * (mA + mB) / rPl)
+    bodies.push(makeBody(cx + Math.cos(angPl) * rPl, cy + Math.sin(angPl) * rPl, -Math.sin(angPl) * vPl, Math.cos(angPl) * vPl, 10, '#A0B8D0', 'planet'))
+    for (let i = 0; i < 18; i++) {
+      const r = 58 + Math.random() * 38, ang = Math.random() * Math.PI * 2
+      const vd = Math.sqrt(G * (mA + mB) / r) * (0.95 + Math.random() * 0.08)
+      bodies.push(makeBody(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r, -Math.sin(ang) * vd, Math.cos(ang) * vd, 0.5 + Math.random() * 0.5, null, 'asteroid'))
+    }
+
+  } else if (name === 'toi178') {
+    // TOI-178: six planets locked in a Laplace resonance chain
+    bodies.push(makeBody(cx, cy, 0, 0, 280, '#FFD27A', 'star'))
+    // Period ratios ≈ 2:4:6:9:12:18 → r ∝ T^(2/3), base r = 30
+    const tRatios = [1, 2, 3, 4.5, 6, 9]
+    const plColors = ['#D09060', '#70C0FF', '#60C090', '#E0A050', '#90C0F0', '#B090D0']
+    const plMasses = [5, 7, 4, 9, 11, 6]
+    for (let i = 0; i < 6; i++) {
+      const r = 30 * Math.pow(tRatios[i], 2 / 3)
+      const ang = Math.random() * Math.PI * 2, v = Math.sqrt(G * 280 / r)
+      bodies.push(makeBody(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r, -Math.sin(ang) * v, Math.cos(ang) * v, plMasses[i], plColors[i], 'planet'))
+    }
   }
 
   return cfg
