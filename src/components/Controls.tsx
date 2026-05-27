@@ -2,6 +2,98 @@ import { useState } from 'react'
 import type { SimControls } from '../hooks/useSimulation'
 import type { BodyType } from '../lib/types'
 
+type BodyPreset = { id: string; label: string; mass: number }
+
+const BODY_PRESETS: Record<BodyType, BodyPreset[]> = {
+  moon: [
+    { id: 'luna',       label: 'Luna (Earth Moon)',        mass: 4   },
+    { id: 'europa',     label: 'Europa-like',              mass: 3   },
+    { id: 'titan',      label: 'Titan-like',               mass: 5   },
+    { id: 'ganymede',   label: 'Ganymede-like',            mass: 6   },
+    { id: 'io',         label: 'Io-like',                  mass: 4   },
+  ],
+  asteroid: [
+    { id: 'ceres',      label: 'Ceres',                    mass: 5   },
+    { id: 'vesta',      label: 'Vesta',                    mass: 3   },
+    { id: 'ryugu',      label: 'Ryugu',                    mass: 2   },
+    { id: 'pallas',     label: 'Pallas',                   mass: 3   },
+  ],
+  comet: [
+    { id: 'halley',     label: "Halley's Comet",           mass: 3   },
+    { id: 'hale-bopp',  label: 'Hale-Bopp-like',          mass: 4   },
+    { id: 'churyumov',  label: 'Churyumov-Gerasimenko',   mass: 2   },
+  ],
+  rocky: [
+    { id: 'mercury',    label: 'Mercury-like',             mass: 8   },
+    { id: 'mars',       label: 'Mars-like',                mass: 10  },
+    { id: 'kepler186f', label: 'Kepler-186f',              mass: 12  },
+    { id: 'custom',     label: 'Custom Rocky',             mass: 12  },
+  ],
+  planet: [
+    { id: 'earth',      label: 'Earth-like',               mass: 30  },
+    { id: 'venus',      label: 'Venus-like',               mass: 28  },
+    { id: 'super-earth',label: 'Super-Earth',              mass: 45  },
+    { id: 'mini-neptune',label:'Mini-Neptune',             mass: 60  },
+  ],
+  ocean: [
+    { id: 'water-world',label: 'Water World',              mass: 22  },
+    { id: 'kepler22b',  label: 'Kepler-22b',               mass: 35  },
+    { id: 'ocean-giant',label: 'Ocean Giant',              mass: 50  },
+  ],
+  lava: [
+    { id: 'proto',      label: 'Protoplanet',              mass: 15  },
+    { id: '55cnce',     label: '55 Cancri e',              mass: 18  },
+    { id: 'lava-giant', label: 'Lava Giant',               mass: 25  },
+  ],
+  'ice-giant': [
+    { id: 'uranus',     label: 'Uranus-like',              mass: 80  },
+    { id: 'neptune',    label: 'Neptune-like',             mass: 85  },
+    { id: 'mini-ice',   label: 'Mini Ice Giant',           mass: 60  },
+  ],
+  'gas-giant': [
+    { id: 'saturn',     label: 'Saturn-like',              mass: 120 },
+    { id: 'jupiter',    label: 'Jupiter-like',             mass: 150 },
+    { id: 'hot-jupiter',label: 'Hot Jupiter',              mass: 180 },
+    { id: 'super-jup',  label: 'Super Jupiter',            mass: 300 },
+  ],
+  'red-dwarf': [
+    { id: 'proxima',    label: 'Proxima Centauri',         mass: 100 },
+    { id: 'trappist1',  label: 'TRAPPIST-1',               mass: 120 },
+    { id: 'barnard',    label: "Barnard's Star",           mass: 110 },
+  ],
+  star: [
+    { id: 'sun',        label: 'Sun-like',                 mass: 280 },
+    { id: 'alpha-cen',  label: 'Alpha Centauri A',         mass: 300 },
+    { id: 'tau-ceti',   label: 'Tau Ceti',                 mass: 250 },
+    { id: 'sirius-a',   label: 'Sirius A',                 mass: 350 },
+  ],
+  'red-giant': [
+    { id: 'aldebaran',  label: 'Aldebaran-like',           mass: 380 },
+    { id: 'betelgeuse', label: 'Betelgeuse-like',          mass: 450 },
+    { id: 'arcturus',   label: 'Arcturus-like',            mass: 400 },
+  ],
+  'blue-giant': [
+    { id: 'rigel',      label: 'Rigel-like',               mass: 500 },
+    { id: 'spica',      label: 'Spica-like',               mass: 550 },
+    { id: 'deneb',      label: 'Deneb-like',               mass: 600 },
+  ],
+  'white-dwarf': [
+    { id: 'sirius-b',   label: 'Sirius B',                 mass: 200 },
+    { id: 'avg-wd',     label: 'Average White Dwarf',      mass: 220 },
+    { id: 'massive-wd', label: 'Massive White Dwarf',      mass: 250 },
+  ],
+  neutron: [
+    { id: 'pulsar',     label: 'Typical Pulsar',           mass: 800 },
+    { id: 'magnetar',   label: 'Magnetar',                 mass: 950 },
+    { id: 'ms-pulsar',  label: 'Millisecond Pulsar',       mass: 900 },
+  ],
+  blackhole: [
+    { id: 'stellar-bh', label: 'Stellar Black Hole',       mass: 1200 },
+    { id: 'intermed',   label: 'Intermediate BH',          mass: 1500 },
+    { id: 'supermass',  label: 'Supermassive BH',          mass: 2000 },
+  ],
+}
+
 type Props = Pick<SimControls,
   | 'paused' | 'starfieldOn' | 'vectorsOn' | 'barnesHutOn' | 'currentType'
   | 'timeScale' | 'gravity' | 'trailMax' | 'nextMass'
@@ -80,6 +172,9 @@ export function Controls(props: Props) {
   const { timeScale, gravity, trailMax, nextMass } = props
 
   const [selectedPreset, setSelectedPreset] = useState('solar')
+  const [selectedBodyPreset, setSelectedBodyPreset] = useState<string>(
+    BODY_PRESETS[props.currentType][0].id
+  )
 
   function trailDisplay(v: number) {
     return String(Math.round(50 + (v / 100) * 1450))
@@ -92,7 +187,18 @@ export function Controls(props: Props) {
   }
 
   function handleBodyTypeChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    props.setCurrentType(e.target.value as BodyType)
+    const type = e.target.value as BodyType
+    props.setCurrentType(type)
+    const firstPreset = BODY_PRESETS[type][0]
+    setSelectedBodyPreset(firstPreset.id)
+    props.setNextMass(firstPreset.mass)
+  }
+
+  function handleBodyPresetChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const id = e.target.value
+    setSelectedBodyPreset(id)
+    const preset = BODY_PRESETS[props.currentType].find(p => p.id === id)
+    if (preset) props.setNextMass(preset.mass)
   }
 
   return (
@@ -167,6 +273,13 @@ export function Controls(props: Props) {
                 <option key={id} value={id}>{name}</option>
               ))}
             </optgroup>
+          ))}
+        </select>
+      </div>
+      <div className="gv-row">
+        <select className="gv-select" value={selectedBodyPreset} onChange={handleBodyPresetChange}>
+          {BODY_PRESETS[currentType].map(p => (
+            <option key={p.id} value={p.id}>{p.label}</option>
           ))}
         </select>
       </div>
